@@ -12,17 +12,18 @@ import (
 
 type (
 	Stats struct {
-		Uptime       time.Time      `json:"uptime"`
-		RequestCount uint64         `json:"requestCount"`
-		Statuses     map[string]int `json:"statuses"`
-		mutex        sync.RWMutex
+		mutex sync.RWMutex
+
+		Uptime       time.Time
+		RequestCount uint64
+		Sites        map[int64]int64
 	}
 )
 
 func NewStats() *Stats {
 	return &Stats{
-		Uptime:   time.Now(),
-		Statuses: map[string]int{},
+		Uptime: time.Now(),
+		Sites:  map[int64]int64{},
 	}
 }
 
@@ -31,11 +32,19 @@ func (s *Stats) Serve(e *echo.Echo) {
 }
 
 // Process is the middleware function.
-func (s *Stats) Process(next echo.HandlerFunc) echo.MiddlewareFunc {
+func (s *Stats) Process() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			// track only api requests
-			if !strings.Contains(c.Request().URL.Path, "/api") {
+			if !strings.Contains(c.Request().URL.Path, "/api/v1/agg") {
+				return next(c)
+			}
+
+			var siteIDInt = 0
+			siteIDInt, err = strconv.Atoi(c.FormValue("site_id"))
+			if err != nil {
+				c.Logger().Error(err)
+
 				return next(c)
 			}
 
@@ -47,10 +56,9 @@ func (s *Stats) Process(next echo.HandlerFunc) echo.MiddlewareFunc {
 			defer s.mutex.Unlock()
 
 			s.RequestCount++
-			status := strconv.Itoa(c.Response().Status)
-			s.Statuses[status]++
+			s.Sites[int64(siteIDInt)]++
 
-			return nil
+			return next(c)
 		}
 	}
 }
@@ -60,5 +68,8 @@ func (s *Stats) GetStats(c echo.Context) error {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	return c.JSON(http.StatusOK, s)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"uptime": s.Uptime,
+		"sites":  s.Sites,
+	})
 }

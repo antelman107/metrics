@@ -5,6 +5,7 @@ import (
 	"github.com/antelman107/metrics/container"
 
 	_ "github.com/antelman107/metrics/cmd/app/definition/controller"
+	_ "github.com/antelman107/metrics/cmd/app/definition/middleware"
 	"github.com/antelman107/metrics/definition/echo"
 	"github.com/antelman107/metrics/definition/logger"
 )

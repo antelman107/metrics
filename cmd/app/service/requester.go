@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/antelman107/metrics/cmd/app/domain"
+	"github.com/antelman107/metrics/cmd/app/queue"
 	"github.com/antelman107/metrics/nosql"
 )
 
@@ -86,7 +87,7 @@ func (s *requester) watch() {
 
 	var (
 		data   []byte
-		site   *domain.Site
+		site   *queue.Site
 		metric *domain.Metric
 		err    error
 		delay  = time.Millisecond * 100
@@ -135,6 +136,7 @@ func (s *requester) watch() {
 		logger.Info("Begin request site", zap.String("site", site.Url))
 
 		timeStart = time.Now()
+		// @TODO normalize url
 		resp, err = client.Get("http://" + site.Url)
 		if err != nil {
 			logger.Error("Error request site", zap.Error(err), zap.String("site", site.Url))

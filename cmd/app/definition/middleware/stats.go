@@ -25,7 +25,7 @@ func init() {
 					return nil, err
 				}
 
-				return stats.Process, nil
+				return stats.Process(), nil
 			},
 		})
 

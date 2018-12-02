@@ -8,6 +8,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/antelman107/metrics/cmd/app/domain"
+	"github.com/antelman107/metrics/cmd/app/queue"
 	"github.com/antelman107/metrics/nosql"
 )
 
@@ -110,7 +111,10 @@ func (s *scheduler) watch() {
 		}
 
 		for _, site = range sites {
-			js, err := json.Marshal(site)
+			js, err := json.Marshal(queue.Site{
+				ID:  site.ID,
+				Url: site.Url,
+			})
 			if err != nil {
 				logger.Error("Can't marshall site", zap.Error(err))
 
