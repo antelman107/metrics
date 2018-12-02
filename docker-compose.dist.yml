@@ -1,0 +1,15 @@
+version: "2"
+services:
+  postgres:
+    image: postgres:9.5
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: metrics
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis:3.2.8
+    ports:
+      - 6379:6379

@@ -1,0 +1,18 @@
+{
+  "logger": {
+    "cores": [{
+      "level": "debug",
+      "encoding": "json"
+    }],
+    "caller": true,
+    "stacktrace": "error",
+    "development": true
+  },
+  "postgres": [
+    "postgres://app:password@127.0.0.1:5432/metrics?sslmode=disable&binary_parameters=yes"
+  ],
+  "redis": {
+      "host": "127.0.0.1",
+      "port": "6379"
+  }
+}
