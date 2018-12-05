@@ -157,6 +157,11 @@ func (s *requester) watch() {
 			}
 		}
 
+		err = resp.Body.Close()
+		if err != nil {
+			logger.Error("Error response body closing", zap.Error(err))
+		}
+
 		err = s.metricRepo.Add(metric)
 		if err != nil {
 			logger.Error("Error add metric", zap.Error(err), zap.String("site", site.Url), zap.Reflect("metric", metric))

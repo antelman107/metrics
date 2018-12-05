@@ -49,6 +49,9 @@ func (repo *site) GetAll() (sites domain.Sites, err error) {
 			&site.ID,
 			&site.Url,
 		)
+		if err != nil {
+			return nil, err
+		}
 
 		sites = append(sites, site)
 	}
