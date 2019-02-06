@@ -1,0 +1,9 @@
+
+binary: "/project/metrics/current/metrics"
+config: "config-volume"
+configPath: "/project/metrics/current/kubernetes"
+
+image:
+  repository: someregistry.com/metrics/metrics
+  tag: 1.0.0
+  pullPolicy: Always

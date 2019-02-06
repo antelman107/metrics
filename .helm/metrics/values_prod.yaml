@@ -1,0 +1,46 @@
+env: "prod"
+
+host: metrics.com
+
+replicas: 1
+
+daemons:
+  - name: "service-requester"
+    parts: ["service", "requester"]
+    worker: false
+    routines: 2
+    resources:
+      requests:
+        cpu: 0.1
+        memory: "100Mi"
+      limits:
+        cpu: 0.1
+        memory: "100Mi"
+
+  - name: "service-scheduler"
+    parts: ["service", "scheduler"]
+    worker: false
+    routines: 1
+    resources:
+      requests:
+        cpu: 0.1
+        memory: "100Mi"
+      limits:
+        cpu: 0.1
+        memory: "100Mi"
+
+  - name: "service-http-server"
+    parts: ["service", "http-server"]
+    worker: false
+    resources:
+      requests:
+        cpu: 1
+        memory: "100Mi"
+      limits:
+        cpu: 1
+        memory: "100Mi"
+
+configData: |-
+  {
+
+  }

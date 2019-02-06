@@ -1,0 +1,52 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.name }}
+    chart: {{ template "telegraf.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: telegraf
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ENV
+              value: {{ .Values.env.ENV | quote }}
+            - name: TELEGRAF_MS_TAG
+              value: {{ .Values.env.TELEGRAF_MS_TAG | quote }}
+            - name: TELEGRAF_DC_TAG
+              value: {{ .Values.env.TELEGRAF_DC_TAG | quote }}
+            - name: TELEGRAF_ENV_TAG
+              value: {{ .Values.env.TELEGRAF_ENV_TAG | quote }}
+            - name: TELEGRAF_DB
+              value: {{ .Values.env.TELEGRAF_DB | quote }}
+            - name: TELEGRAF_USER
+              value: {{ .Values.env.TELEGRAF_USER | quote }}
+            - name: TELEGRAF_PASSWD
+              value: {{ .Values.env.TELEGRAF_PASSWD | quote }}
+            - name: TELEGRAF_RP
+              value: {{ .Values.env.TELEGRAF_RP | quote }}
+            - name: TELEGRAF_NAMEPASS
+              value: {{ .Values.env.TELEGRAF_NAMEPASS | quote }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}

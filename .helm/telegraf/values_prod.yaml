@@ -1,0 +1,26 @@
+replicas: 1
+name: telegraf-prod-metrics
+
+resources:
+  requests:
+    cpu: 0.15
+    memory: "100Mi"
+  limits:
+    cpu: 0.8
+    memory: "500Mi"
+
+env:
+  ENV: "prod"
+  TELEGRAF_MS_TAG: "metrics"
+  TELEGRAF_DC_TAG: "wz-ams"
+  TELEGRAF_ENV_TAG: "prod"
+  TELEGRAF_DB: "metrics"
+  TELEGRAF_USER: "metrics"
+  TELEGRAF_PASSWD: "somepass"
+  TELEGRAF_RP: "onemonth"
+  TELEGRAF_NAMEPASS: "\"metrics-*\""
+
+hpa:
+  targetCPU: 70 # При какой утилизации CPU добавлять инстанс
+  minReplica: 1
+  maxReplica: 20

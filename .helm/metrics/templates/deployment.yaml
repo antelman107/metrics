@@ -1,0 +1,91 @@
+---
+{{ $root := . }}
+{{ $firstDaemon := index $root.Values "daemons" 0 }}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ $root.Values.env }}-{{ template "metrics.fullname" $root }}
+  namespace: {{ $root.Release.Namespace }}
+  labels:
+    app: {{ template "metrics.name" $root }}
+    chart: {{ template "metrics.chart" $root }}
+    release: {{ $root.Release.Name }}
+    heritage: {{ $root.Release.Service }}
+spec:
+  replicas: {{ $root.Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $root.Values.env }}-{{ template "metrics.name" $root }}
+      release: {{ $root.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $root.Values.env }}-{{ template "metrics.name" $root }}
+        release: {{ $root.Release.Name }}
+      annotations:
+        release: {{ $root.Release.Revision | quote }}
+    spec:
+      initContainers:
+        - name: "migrate-database-up"
+          image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          command: ["/docker-entrypoint.sh"]
+          args:
+            - "{{ $root.Values.binary }}"
+            - "migrate"
+            - "database"
+            - "up"
+            - "-c"
+            - "{{ $root.Values.configPath }}/config.json"
+          volumeMounts:
+            - name: {{ $root.Values.config }}
+              mountPath: {{ $root.Values.configPath }}
+          resources:
+            limits:
+              cpu:     {{ $firstDaemon.resources.limits.cpu | quote }}
+              memory:  {{ $firstDaemon.resources.limits.memory | quote }}
+            requests:
+              cpu:     {{ $firstDaemon.resources.requests.cpu | quote }}
+              memory:  {{ $firstDaemon.resources.requests.memory | quote }}
+      containers:
+      {{ range $index, $daemon := index $root.Values "daemons" }}
+        - name: "{{ $root.Values.env }}-{{ $daemon.name }}"
+          image: "{{ $root.Values.image.repository }}:{{ $root.Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          command: ["/docker-entrypoint.sh"]
+          args:
+            - "{{ $root.Values.binary }}"
+            {{ range $part := index $daemon "parts"}}
+            - {{ $part }}
+            {{ end }}
+            {{ if $daemon.worker }}
+            - "-w"
+            - "$(POD_NAME)"
+            {{ end }}
+            {{ if $daemon.routines }}
+            - "-g"
+            - "{{ $daemon.routines }}"
+            {{ end }}
+            - "-c"
+            - "{{ $root.Values.configPath }}/config.json"
+          volumeMounts:
+            - name: {{ $root.Values.config }}
+              mountPath: {{ $root.Values.configPath }}
+          resources:
+            limits:
+              cpu:     {{ $daemon.resources.limits.cpu | quote }}
+              memory:  {{ $daemon.resources.limits.memory | quote }}
+            requests:
+              cpu:     {{ $daemon.resources.requests.cpu | quote }}
+              memory:  {{ $daemon.resources.requests.memory | quote }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      {{ end }}
+      volumes:
+        - name: {{ $root.Values.config }}
+          configMap:
+            name: {{ $root.Values.config }}
+

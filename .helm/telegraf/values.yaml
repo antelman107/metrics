@@ -1,0 +1,4 @@
+port: 8092
+image:
+  repository: someregistry.com/telegraf/telegraf
+  tag: kubernetes
